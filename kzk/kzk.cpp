@@ -5,6 +5,7 @@
 #include <iostream>   
 #include <functional>
 #include <cmath>
+#include <numeric>
 
 
 std::vector<long long> triw_podzial(const long long sekret, const long long k, const int n=2) {
@@ -59,9 +60,27 @@ std::vector<std::pair<int, long long>> shamir_podzial(const long long sekret, co
     return udzialy;
 }
 
+long long fraction_mod(long long licznik, long long mianownik, long long p) {
+    long long i = 1;
+    auto licmod = licznik % p;
+    if (licmod < 0) licmod += p;
+    while (true) {
+        auto mod = mianownik * i % p;
+        if (mod < 0) {
+            if (mod + p == licmod) break;
+        }
+        else {
+            if (mod == licmod) break;
+        }
+        i++;
+    }
+    return i;
+}
+
 long long shamir_sklad(std::vector<std::pair<int, long long>> udzialy, const long long p) {
     std::vector<int> indexes;
-    long long wynik = 0;
+    long long wynikl = 0;
+    long long wynikm = 1;
     for (auto const i : udzialy) {
         auto licznik = i.second;
         long long mianownik = 1;
@@ -74,27 +93,33 @@ long long shamir_sklad(std::vector<std::pair<int, long long>> udzialy, const lon
                 mianownik *= i.first - j.first;
             }
         }
-        std::modulus<long long> modulo;
-        auto dodaj = modulo((licznik / mianownik), p);
+        auto dodaj = (licznik / mianownik);
         //if (dodaj < 0) dodaj += p;
-        wynik += dodaj;
-        std::cout << i.first << " wolny " << dodaj << std::endl;
+        wynikl = wynikl*mianownik + licznik*wynikm;
+        wynikm *= mianownik;
+        std::cout << i.first << " wolny " << licznik << "/" << mianownik << std::endl;
     }
-    std::cout << wynik << std::endl;
-    return wynik % p;
+    std::cout << wynikl << "/" << wynikm << std::endl;
+    //auto wynik = ((wynikl % p) * wynikm) % p;
+    return fraction_mod(wynikl, wynikm, p);
 }
 
 
 int main()
 {
+    std::cout << (-144*954) % 1523 << std::endl;
     long long sekret = 954;
     //long long k = 2617;
     long long k = 1523;
     /*auto udzialy = triw_podzial(sekret, k, 5);
     std::cout << triw_sklad(udzialy, k) << std::endl;*/
-    auto udzialyy = shamir_podzial(sekret, k, 5, 3);
-    udzialyy.erase(udzialyy.begin()+1);
-    udzialyy.erase(udzialyy.begin() + 1);
+    auto udzialyy = shamir_podzial(sekret, k, 10, 5);
+    udzialyy.erase(udzialyy.begin());
+    udzialyy.erase(udzialyy.begin());
+    udzialyy.erase(udzialyy.begin());
+    udzialyy.erase(udzialyy.begin());
+    udzialyy.erase(udzialyy.begin());
+    //udzialyy.erase(udzialyy.begin() + 1);
     std::cout << udzialyy.size() << std::endl;
     std::cout << shamir_sklad(udzialyy, k);
 }
